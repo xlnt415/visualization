@@ -1,10 +1,19 @@
 import streamlit as st
-import requests
-from PIL import Image
-from io import BytesIO
+import os
 
-# Streamlit 웹 애플리케이션의 제목 설정
-st.title('URL을 통해 이미지 로드하기')
 
-# 사용자로부터 이미지 URL 입력 받기
-image_url = st.text_input('이미지 URL을 입력하세요:')
+#디렉터리의 이미지 경로를 가져옴
+def load_imags(dirs):
+  images = []
+  for filename in os.listdir(dirs):
+    if filename.endswith(".JPG") or filename.endswith(".PNG"):
+      images_path = os.path.join(dirs, filename)
+      images.append(images_path)
+  return images
+
+
+image_dir = "streamlit/inflearn/imgs"
+images = load_imags(image_dir)
+
+for image in images:
+  st.image(image, width=500)

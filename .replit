@@ -1,4 +1,4 @@
-run = "streamlit run streamlit/inflearn/04.py"
+run = "streamlit run streamlit/inflearn/05_faker_input.py"
 
 modules = ["python-3.10:v18-20230807-322e88b"]
 

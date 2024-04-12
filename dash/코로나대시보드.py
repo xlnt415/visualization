@@ -3,12 +3,12 @@ import numpy as np
 
 import dash
 import dash_html_components as html
-import dash_core_components as dcc
+from dash import dcc
 from dash.dependencies import Input, Output, State
 
 import plotly.graph_objects as go
 from plotly.colors import DEFAULT_PLOTLY_COLORS
-import plotly.subplots as make_subplots
+from plotly.subplots import make_subplots
 
 import io
 import base64
@@ -22,22 +22,9 @@ df_disease = pd.concat([pd.read_csv(path + 'disease_ARI.csv'),
                        pd.read_csv(path + 'disease_Influenza.csv'),
                        pd.read_csv(path + 'disease_SP.csv')])
 
-# # 파일이 저장된 경로 설정
-# file_path = r"G:\내 드라이브\xlnt_space\dash\rawdata"
 
-# # 디렉토리 내의 모든 파일 리스트 가져오기
-# file_list = os.listdir(file_path)
 
-# # 'disease'를 포함하는 파일만 선택하여 결합
-# disease_files = [file for file in file_list if 'disease' in file]
-
-# # 파일들을 읽어서 DataFrame으로 결합
-# dfs = [pd.read_csv(os.path.join(file_path, file)) for file in disease_files]
-
-# # DataFrame들을 결합하여 하나의 DataFrame으로 만들기
-# df_disease = pd.concat(dfs)
-
-# button = ['Accute Respiratory Infection', 'Influenza', 'Streptococcus Pneumoniae']
+button = ['Accute Respiratory Infection', 'Influenza', 'Streptococcus Pneumoniae']
 # 상단 중앙에 제목 위치, 하단 영역은 탭 기능 사용
 
 # App structure
@@ -47,37 +34,119 @@ server = app.server
 
 # App layout
 app.layout = html.Div([
-    # main title
-    html.H2('COVID-19 유행이 한국의 호흡기 질환 발생 추이에 미치는 영향', style={'textAlign': 'center'}),
-
+    
+    # Main Title
+    html.H2('Impact of COVID-19 Pandemic on Occurrence Trends of Resiratory Diseases in Korea', style={'textAlign': 'center'}),
+    
     dcc.Tabs([
+        
         # Tab 1
-        dcc.Tab(label='대시보드',
-                style={'padding': '3px', 'fontWeight': 'bold', 'borderBottom': '1px solid #d6d6d6'},
-                selected_style={'padding': '3px', 'backgroundColor': '#119DFF', 'color': 'white',
-                              'borderBottom': '1px solid #d6d6d6', 'borderTop': '1px solid #d6d6d6'},
-
-                children=[
+        dcc.Tab(label='Dashboard',
+                style={'padding':'3px', 'fontWeight':'bold', 'borderBottom':'1px solid #d6d6d6'}, 
+                selected_style={'padding':'3px', 'backgroundColor': '#119DFF', 'color': 'white',
+                                'borderBottom':'1px solid #d6d6d6', 'borderTop':'1px solid #d6d6d6'},
+                
+                children = [
                     html.Div([
-                        html.P('질병 유형: '),
-                        dcc.RadioItems(id='radio',
+                        html.P(children='Disease Type: '),
+                        dcc.RadioItems(id = 'radio',
                                        options=[{'label': i, 'value': i} for i in button],
-                                       value='급성 호흡기 감염',
+                                       value = 'Acute Respiratory Infection',
                                        labelStyle={'display': 'block'})
-                    ])
-                ]),
+                            ]),
+                    
+                    dcc.Graph(id = 'graph', style={'width': '95%', 'height': 650, 'margin-left': 'auto', 'margin-right': 0}),
+                                            # Graph 높이를 layout에서 설정하기. Callback에서 처리하면 Tab 이동시 초기화 됨
+                        
+                    ]),
+        
         # Tab 2
-        dcc.Tab(label='업로드',
-                style={'padding': '3px', 'fontWeight': 'bold', 'borderBottom': '1px solid #d6d6d6'},
-                selected_style={'padding': '3px', 'backgroundColor': '#119DFF', 'color': 'white',
-                                'borderBottom': '1px solid #d6d6d6', 'borderTop': '1px solid #d6d6d6'})
-
+        dcc.Tab(label='Upload',
+                style={'padding':'3px', 'fontWeight':'bold', 'borderBottom':'1px solid #d6d6d6'}, 
+                selected_style={'padding':'3px', 'backgroundColor': '#119DFF', 'color': 'white',
+                                'borderBottom':'1px solid #d6d6d6', 'borderTop':'1px solid #d6d6d6'},
+                
+                children = [
+                    html.Div([
+                        
+                        html.Div([dcc.Upload(id='up1',
+                                             children=html.Div('Upload-COVID19'),
+                                             style={'width': '15%', 'height': '30px',
+                                                    'lineHeight': '30px', 'borderWidth': '1px',
+                                                    'borderStyle': 'dashed', 'borderRadius': '2px',
+                                                    'textAlign': 'center', 'float':'left', 'display':'inline-block'})]),
+                        
+                        html.Div([dcc.Upload(id='up2',
+                                             children=html.Div('Upload-Disease'),
+                                             style={'width': '15%', 'height': '30px',
+                                                    'lineHeight': '30px', 'borderWidth': '1px',
+                                                    'borderStyle': 'dashed', 'borderRadius': '2px',
+                                                    'textAlign': 'center', 'float':'left', 'display':'inline-block'})])        
+                        ], style={'width':'75%', 'overflow': 'hidden'}),  # hidden : 영역에 맞춰 나머지는 숨김처리
+                    
+                    dcc.Graph(id = 'auto', style={'width': '95%', 'height': 650, 'margin-left':'auto', 'margin-right': 0})
+                                            # Graph 높이를 layout에서 설정하기. Callback에서 처리하면 Tab 이동시 초기화 됨
+                    
+                    ])
     ])
 ])
 
 
+# ### Tab 1 - Dashboard
+
+# In[ ]:
 
 
+@app.callback(Output('graph', 'figure'), [Input('radio', 'value')])
+def update_radio(val):
+    
+    # Create figure with secondary y-axis
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    
+    ############################################################################### Bar Chart
+    dis = df_cov['distance'].unique().tolist()
+    col = ["#4088DA", "#B9DEDF", "#FFB911", "#FC7001", "#E60000"]
+
+    # Loop - Distance
+    for i in range(len(dis)):
+        cov = df_cov[df_cov['distance'] == dis[i]]
+        
+        fig.add_trace(go.Bar(x=cov['week'],
+                             y=cov['value'],
+                             text=cov['distance'],
+                             name=dis[i],
+                             hovertemplate='<b>2020</b><br> Week: %{x}<br> Distance: %{text}<br> Confirmed: %{y:,}',
+                             hoverlabel_font_color='rgb(255,255,255)',
+                             textposition='none',
+                             marker_color=col[i]),
+                      secondary_y=False)
+
+    fig.update_layout(go.Layout(xaxis = dict(title = 'Time (week)',
+                                             dtick = 1, tickangle = 0),  # dtick : x 간격, tickangle : x label 각도 조절
+                                yaxis = dict(title ='Cumulative Number of Confirmed Cases',
+                                             tickformat = ',', showgrid = False),
+                                legend = dict(orientation='h', yanchor='top', y=1.1, traceorder='normal')))
+    
+    ############################################################################### Line Chart
+    yr = df_disease['year'].unique().tolist()
+    line = ['dash', 'dot' ,'solid']
+    
+    for i in range(len(yr)):
+        df = df_disease[(df_disease['disease'] == val) & (df_disease['year'] == yr[i])]
+
+        fig.add_trace(go.Scatter(x=df['week'],
+                                 y=df['value'],
+                                 text=df['year'],
+                                 name=yr[i],
+                                 hovertemplate='<b>%{text}</b><br> Week: %{x} <br> Patient: %{y:,}',
+                                 mode="lines",
+                                 line={'dash': line[i], 'color':'black', 'width':1}),
+                      secondary_y=True)
+    
+    # 보조축 title
+    fig.update_yaxes(title_text='Number of Case('+ val +')', tickformat = ',', secondary_y=True)
+    
+    return fig
 # Run App
 if __name__ == '__main__':
     app.run_server(debug=False)

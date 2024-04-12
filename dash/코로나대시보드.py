@@ -14,23 +14,30 @@ import io
 import base64
 import os
 
+path = 'https://raw.githubusercontent.com/hong-sj/python/main/data/Public%20data/'
 
-# 파일이 저장된 경로 설정
-file_path = r"G:\내 드라이브\xlnt_space\dash\rawdata"
+df_cov = pd.read_csv(path + 'disease_COVID19.csv')
 
-# 디렉토리 내의 모든 파일 리스트 가져오기
-file_list = os.listdir(file_path)
+df_disease = pd.concat([pd.read_csv(path + 'disease_ARI.csv'),
+                       pd.read_csv(path + 'disease_Influenza.csv'),
+                       pd.read_csv(path + 'disease_SP.csv')])
 
-# 'disease'를 포함하는 파일만 선택하여 결합
-disease_files = [file for file in file_list if 'disease' in file]
+# # 파일이 저장된 경로 설정
+# file_path = r"G:\내 드라이브\xlnt_space\dash\rawdata"
 
-# 파일들을 읽어서 DataFrame으로 결합
-dfs = [pd.read_csv(os.path.join(file_path, file)) for file in disease_files]
+# # 디렉토리 내의 모든 파일 리스트 가져오기
+# file_list = os.listdir(file_path)
 
-# DataFrame들을 결합하여 하나의 DataFrame으로 만들기
-df_disease = pd.concat(dfs)
+# # 'disease'를 포함하는 파일만 선택하여 결합
+# disease_files = [file for file in file_list if 'disease' in file]
 
-button = ['Accute Respiratory Infection', 'Influenza', 'Streptococcus Pneumoniae']
+# # 파일들을 읽어서 DataFrame으로 결합
+# dfs = [pd.read_csv(os.path.join(file_path, file)) for file in disease_files]
+
+# # DataFrame들을 결합하여 하나의 DataFrame으로 만들기
+# df_disease = pd.concat(dfs)
+
+# button = ['Accute Respiratory Infection', 'Influenza', 'Streptococcus Pneumoniae']
 # 상단 중앙에 제목 위치, 하단 영역은 탭 기능 사용
 
 # App structure

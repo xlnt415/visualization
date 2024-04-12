@@ -1,6 +1,26 @@
+## Streamlit
 # run = "streamlit run streamlit/inflearn/11_streamlit_char01.py"
-run = "dash run dash/코로나대시보드.py"
 
+
+# modules = ["python-3.10:v18-20230807-322e88b"]
+
+# hidden = [".pythonlibs"]
+
+# [nix]
+# channel = "stable-23_05"
+
+# [deployment]
+# run = ["sh", "-c", "streamlit run streamlit/inflearn/main.py"]
+# ignorePorts = false
+# deploymentTarget = "gce"
+
+# [[ports]]
+# localPort = 8501
+# externalPort = 80
+
+# Dash
+language = "python3"
+run = "python dash/코로나대시보드.py"
 
 modules = ["python-3.10:v18-20230807-322e88b"]
 
@@ -10,10 +30,10 @@ hidden = [".pythonlibs"]
 channel = "stable-23_05"
 
 [deployment]
-run = ["sh", "-c", "streamlit run streamlit/inflearn/main.py"]
 ignorePorts = false
 deploymentTarget = "gce"
 
 [[ports]]
-localPort = 8501
+localPort = 8050
 externalPort = 80
+exposeLocalhost = true

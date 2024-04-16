@@ -1,0 +1,22 @@
+name: CICD-SSH
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: executing remote ssh commands using ssh key
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.HOST }} 
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: 22
+        script: |
+            whoami
+            ls -al
+            cd ${{ github.event.repository.name }}
+            echo "Hello World!"
+            chmod +x deploy.sh
+            sh deploy.sh
+            echo "Done----"

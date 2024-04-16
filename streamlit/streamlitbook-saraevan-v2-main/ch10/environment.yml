@@ -1,0 +1,11 @@
+name: condagcp
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - numpy
+  - pandas
+  - matplotlib
+  - pip:
+      - streamlit
+prefix: C:\Users\j2hoo\anaconda3\envs\condagcp
